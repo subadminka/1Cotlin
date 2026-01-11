@@ -53,9 +53,9 @@ RDataLayout layout_rdata(CodeGen *cg, StringLit **strings, size_t strings_count)
     size_t import_desc_off = rdata_offset;
     rdata_offset += 40;
     size_t ilt_off = rdata_offset;
-    rdata_offset += 40;
+    rdata_offset += 56;
     size_t iat_off = rdata_offset;
-    rdata_offset += 40;
+    rdata_offset += 56;
     size_t hn_getstd = rdata_offset;
     rdata_offset += 2 + strlen("GetStdHandle") + 1;
     rdata_offset = align_up(rdata_offset, 2);
@@ -68,6 +68,12 @@ RDataLayout layout_rdata(CodeGen *cg, StringLit **strings, size_t strings_count)
     size_t hn_setconcp = rdata_offset;
     rdata_offset += 2 + strlen("SetConsoleOutputCP") + 1;
     rdata_offset = align_up(rdata_offset, 2);
+    size_t hn_getheap = rdata_offset;
+    rdata_offset += 2 + strlen("GetProcessHeap") + 1;
+    rdata_offset = align_up(rdata_offset, 2);
+    size_t hn_heapalloc = rdata_offset;
+    rdata_offset += 2 + strlen("HeapAlloc") + 1;
+    rdata_offset = align_up(rdata_offset, 2);
     size_t dll_name = rdata_offset;
     rdata_offset += strlen("kernel32.dll") + 1;
     size_t rdata_size = rdata_offset;
@@ -76,6 +82,8 @@ RDataLayout layout_rdata(CodeGen *cg, StringLit **strings, size_t strings_count)
     cg->iat_write_rva = cg->rdata_rva + (uint32_t)iat_off + 1 * 8;
     cg->iat_exit_rva = cg->rdata_rva + (uint32_t)iat_off + 2 * 8;
     cg->iat_setconcp_rva = cg->rdata_rva + (uint32_t)iat_off + 3 * 8;
+    cg->iat_getprocheap_rva = cg->rdata_rva + (uint32_t)iat_off + 4 * 8;
+    cg->iat_heapalloc_rva = cg->rdata_rva + (uint32_t)iat_off + 5 * 8;
 
     RDataLayout l = {0};
     l.rdata_size = rdata_size;
@@ -86,6 +94,8 @@ RDataLayout layout_rdata(CodeGen *cg, StringLit **strings, size_t strings_count)
     l.hn_write = hn_write;
     l.hn_exit = hn_exit;
     l.hn_setconcp = hn_setconcp;
+    l.hn_getheap = hn_getheap;
+    l.hn_heapalloc = hn_heapalloc;
     l.dll_name = dll_name;
     return l;
 }
@@ -121,13 +131,17 @@ void write_pe(const char *out, CodeGen *cg, StringLit **strings, size_t strings_
     buf_u64(rdata, l.ilt_off + 1 * 8, cg->rdata_rva + (uint32_t)l.hn_write);
     buf_u64(rdata, l.ilt_off + 2 * 8, cg->rdata_rva + (uint32_t)l.hn_exit);
     buf_u64(rdata, l.ilt_off + 3 * 8, cg->rdata_rva + (uint32_t)l.hn_setconcp);
-    buf_u64(rdata, l.ilt_off + 4 * 8, 0);
+    buf_u64(rdata, l.ilt_off + 4 * 8, cg->rdata_rva + (uint32_t)l.hn_getheap);
+    buf_u64(rdata, l.ilt_off + 5 * 8, cg->rdata_rva + (uint32_t)l.hn_heapalloc);
+    buf_u64(rdata, l.ilt_off + 6 * 8, 0);
 
     buf_u64(rdata, l.iat_off + 0 * 8, cg->rdata_rva + (uint32_t)l.hn_getstd);
     buf_u64(rdata, l.iat_off + 1 * 8, cg->rdata_rva + (uint32_t)l.hn_write);
     buf_u64(rdata, l.iat_off + 2 * 8, cg->rdata_rva + (uint32_t)l.hn_exit);
     buf_u64(rdata, l.iat_off + 3 * 8, cg->rdata_rva + (uint32_t)l.hn_setconcp);
-    buf_u64(rdata, l.iat_off + 4 * 8, 0);
+    buf_u64(rdata, l.iat_off + 4 * 8, cg->rdata_rva + (uint32_t)l.hn_getheap);
+    buf_u64(rdata, l.iat_off + 5 * 8, cg->rdata_rva + (uint32_t)l.hn_heapalloc);
+    buf_u64(rdata, l.iat_off + 6 * 8, 0);
 
     buf_u16(rdata, l.hn_getstd + 0, 0);
     memcpy(rdata + l.hn_getstd + 2, "GetStdHandle", strlen("GetStdHandle") + 1);
@@ -137,6 +151,10 @@ void write_pe(const char *out, CodeGen *cg, StringLit **strings, size_t strings_
     memcpy(rdata + l.hn_exit + 2, "ExitProcess", strlen("ExitProcess") + 1);
     buf_u16(rdata, l.hn_setconcp + 0, 0);
     memcpy(rdata + l.hn_setconcp + 2, "SetConsoleOutputCP", strlen("SetConsoleOutputCP") + 1);
+    buf_u16(rdata, l.hn_getheap + 0, 0);
+    memcpy(rdata + l.hn_getheap + 2, "GetProcessHeap", strlen("GetProcessHeap") + 1);
+    buf_u16(rdata, l.hn_heapalloc + 0, 0);
+    memcpy(rdata + l.hn_heapalloc + 2, "HeapAlloc", strlen("HeapAlloc") + 1);
     memcpy(rdata + l.dll_name, "kernel32.dll", strlen("kernel32.dll") + 1);
 
     FILE *f = fopen(out, "wb");

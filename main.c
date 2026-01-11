@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     layout_rdata(&cg, p.strings, p.strings_count);
 
     size_t locals_size = st.count * 8;
-    size_t temps_size = 8 + 8 + 32;
+    size_t temps_size = 8 + 8 + 32 + 8 + 8 + 8 + 8;
     size_t loops_size = cg.loop_slots * 8;
     size_t vstack_size = max_stack * 8;
     size_t locals_total = locals_size + temps_size + loops_size + vstack_size;
@@ -42,7 +42,11 @@ int main(int argc, char **argv) {
     cg.stdout_offset = -16 - (int64_t)locals_size - 8;
     cg.bytes_written_offset = cg.stdout_offset - 8;
     cg.intbuf_offset = cg.bytes_written_offset - 32;
-    cg.loop_slots_offset = cg.intbuf_offset - 8;
+    cg.heap_offset = cg.intbuf_offset - 8;
+    cg.temp_offset = cg.heap_offset - 8;
+    cg.temp2_offset = cg.temp_offset - 8;
+    cg.lambda_param_offset = cg.temp2_offset - 8;
+    cg.loop_slots_offset = cg.lambda_param_offset - 8;
     cg.vstack_base_offset = -16 - (int64_t)locals_total;
     cg.frame_size = align_up(32 + locals_total, 16);
 

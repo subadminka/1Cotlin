@@ -97,6 +97,13 @@ static void emit_mov_r9_imm32(CodeGen *cg, uint32_t v) {
     emit32(&cg->code, v);
 }
 
+static void emit_mov_rdx_imm32(CodeGen *cg, uint32_t v) {
+    emit8(&cg->code, 0x48);
+    emit8(&cg->code, 0xC7);
+    emit8(&cg->code, 0xC2);
+    emit32(&cg->code, v);
+}
+
 
 static void emit_mov_rcx_from_rbp(CodeGen *cg, int32_t disp) {
     emit8(&cg->code, 0x48);
@@ -111,6 +118,307 @@ static void emit_mov_rax_from_rbp(CodeGen *cg, int32_t disp) {
     emit8(&cg->code, 0x8B);
     emit8(&cg->code, 0x85);
     emit32(&cg->code, (uint32_t)disp);
+}
+
+static void emit_mov_rax_from_rcx_disp8(CodeGen *cg, uint8_t disp) {
+    emit8(&cg->code, 0x48);
+    emit8(&cg->code, 0x8B);
+    emit8(&cg->code, 0x41);
+    emit8(&cg->code, disp);
+}
+
+static void emit_mov_rdx_from_rcx_disp8(CodeGen *cg, uint8_t disp) {
+    emit8(&cg->code, 0x48);
+    emit8(&cg->code, 0x8B);
+    emit8(&cg->code, 0x51);
+    emit8(&cg->code, disp);
+}
+
+static void emit_mov_rcx_from_rdx_disp8(CodeGen *cg, uint8_t disp) {
+    emit8(&cg->code, 0x48);
+    emit8(&cg->code, 0x8B);
+    emit8(&cg->code, 0x4A);
+    emit8(&cg->code, disp);
+}
+
+static void emit_mov_membase_rcx_from_rax(CodeGen *cg, uint8_t disp) {
+    emit8(&cg->code, 0x48);
+    emit8(&cg->code, 0x89);
+    emit8(&cg->code, 0x41);
+    emit8(&cg->code, disp);
+}
+
+static void emit_mov_rax_from_rcx(CodeGen *cg) {
+    emit8(&cg->code, 0x48);
+    emit8(&cg->code, 0x89);
+    emit8(&cg->code, 0xC8);
+}
+
+static void emit_mov_rcx_from_rax(CodeGen *cg) {
+    emit8(&cg->code, 0x48);
+    emit8(&cg->code, 0x89);
+    emit8(&cg->code, 0xC1);
+}
+
+static void emit_mov_r8_from_rax(CodeGen *cg) {
+    emit8(&cg->code, 0x49);
+    emit8(&cg->code, 0x89);
+    emit8(&cg->code, 0xC0);
+}
+
+static void emit_mov_r8_from_rcx_disp8(CodeGen *cg, uint8_t disp) {
+    emit8(&cg->code, 0x4C);
+    emit8(&cg->code, 0x8B);
+    emit8(&cg->code, 0x41);
+    emit8(&cg->code, disp);
+}
+
+static void emit_mov_rax_from_r8(CodeGen *cg) {
+    emit8(&cg->code, 0x4C);
+    emit8(&cg->code, 0x89);
+    emit8(&cg->code, 0xC0);
+}
+
+static void emit_mov_r9_from_rax(CodeGen *cg) {
+    emit8(&cg->code, 0x49);
+    emit8(&cg->code, 0x89);
+    emit8(&cg->code, 0xC1);
+}
+
+static void emit_mov_r12_from_rax(CodeGen *cg) {
+    emit8(&cg->code, 0x49);
+    emit8(&cg->code, 0x89);
+    emit8(&cg->code, 0xC4);
+}
+
+static void emit_mov_rax_from_r12(CodeGen *cg) {
+    emit8(&cg->code, 0x4C);
+    emit8(&cg->code, 0x89);
+    emit8(&cg->code, 0xE0);
+}
+
+static void emit_mov_rdx_from_r12(CodeGen *cg) {
+    emit8(&cg->code, 0x4C);
+    emit8(&cg->code, 0x89);
+    emit8(&cg->code, 0xE2);
+}
+
+static void emit_mov_rax_from_r9(CodeGen *cg) {
+    emit8(&cg->code, 0x4C);
+    emit8(&cg->code, 0x89);
+    emit8(&cg->code, 0xC8);
+}
+
+static void emit_cmp_r8_rax(CodeGen *cg) {
+    emit8(&cg->code, 0x49);
+    emit8(&cg->code, 0x39);
+    emit8(&cg->code, 0xC0);
+}
+
+static void emit_cmp_r9_rax(CodeGen *cg) {
+    emit8(&cg->code, 0x49);
+    emit8(&cg->code, 0x39);
+    emit8(&cg->code, 0xC1);
+}
+
+static void emit_cmp_rdx_rax(CodeGen *cg) {
+    emit8(&cg->code, 0x48);
+    emit8(&cg->code, 0x39);
+    emit8(&cg->code, 0xC2);
+}
+
+static void emit_mov_rdx_from_rax(CodeGen *cg) {
+    emit8(&cg->code, 0x48);
+    emit8(&cg->code, 0x89);
+    emit8(&cg->code, 0xC2);
+}
+
+static void emit_mov_rax_from_rdx(CodeGen *cg) {
+    emit8(&cg->code, 0x48);
+    emit8(&cg->code, 0x89);
+    emit8(&cg->code, 0xD0);
+}
+
+static void emit_mov_r8_from_rdx_disp8(CodeGen *cg, uint8_t disp) {
+    emit8(&cg->code, 0x4C);
+    emit8(&cg->code, 0x8B);
+    emit8(&cg->code, 0x42);
+    emit8(&cg->code, disp);
+}
+
+static void emit_mov_rdx_from_rdx_disp8(CodeGen *cg, uint8_t disp) {
+    emit8(&cg->code, 0x48);
+    emit8(&cg->code, 0x8B);
+    emit8(&cg->code, 0x52);
+    emit8(&cg->code, disp);
+}
+
+static void emit_mov_r9_from_rdx_disp8(CodeGen *cg, uint8_t disp) {
+    emit8(&cg->code, 0x4C);
+    emit8(&cg->code, 0x8B);
+    emit8(&cg->code, 0x4A);
+    emit8(&cg->code, disp);
+}
+
+static void emit_mov_mem_rdx_from_rax(CodeGen *cg, uint8_t disp) {
+    emit8(&cg->code, 0x48);
+    emit8(&cg->code, 0x89);
+    emit8(&cg->code, 0x42);
+    emit8(&cg->code, disp);
+}
+
+static void emit_mov_mem_rdx_from_rcx(CodeGen *cg, uint8_t disp) {
+    emit8(&cg->code, 0x48);
+    emit8(&cg->code, 0x89);
+    emit8(&cg->code, 0x4A);
+    emit8(&cg->code, disp);
+}
+
+static void emit_mov_rcx_from_r8(CodeGen *cg) {
+    emit8(&cg->code, 0x4C);
+    emit8(&cg->code, 0x89);
+    emit8(&cg->code, 0xC1);
+}
+
+static void emit_mov_rcx_from_r9(CodeGen *cg) {
+    emit8(&cg->code, 0x4C);
+    emit8(&cg->code, 0x89);
+    emit8(&cg->code, 0xC9);
+}
+
+static void emit_mov_r8_from_rcx(CodeGen *cg) {
+    emit8(&cg->code, 0x49);
+    emit8(&cg->code, 0x89);
+    emit8(&cg->code, 0xC8);
+}
+
+static void emit_mov_r9_from_rcx(CodeGen *cg) {
+    emit8(&cg->code, 0x49);
+    emit8(&cg->code, 0x89);
+    emit8(&cg->code, 0xC9);
+}
+
+static void emit_lea_r8_rdx_rax(CodeGen *cg) {
+    emit8(&cg->code, 0x4C);
+    emit8(&cg->code, 0x8D);
+    emit8(&cg->code, 0x04);
+    emit8(&cg->code, 0xC2);
+}
+
+static void emit_mov_r8_from_rbp(CodeGen *cg, int32_t disp) {
+    emit8(&cg->code, 0x4C);
+    emit8(&cg->code, 0x8B);
+    emit8(&cg->code, 0x85);
+    emit32(&cg->code, (uint32_t)disp);
+}
+
+static void emit_mov_r9_from_rbp(CodeGen *cg, int32_t disp) {
+    emit8(&cg->code, 0x4C);
+    emit8(&cg->code, 0x8B);
+    emit8(&cg->code, 0x8D);
+    emit32(&cg->code, (uint32_t)disp);
+}
+
+static void emit_mov_mem_rax_from_rcx(CodeGen *cg) {
+    emit8(&cg->code, 0x48);
+    emit8(&cg->code, 0x89);
+    emit8(&cg->code, 0x08);
+}
+
+static void emit_mov_mem_rax_from_r8(CodeGen *cg) {
+    emit8(&cg->code, 0x4C);
+    emit8(&cg->code, 0x89);
+    emit8(&cg->code, 0x00);
+}
+
+static void emit_mov_rax_from_mem_rax(CodeGen *cg) {
+    emit8(&cg->code, 0x48);
+    emit8(&cg->code, 0x8B);
+    emit8(&cg->code, 0x00);
+}
+
+static void emit_add_rax_rdx(CodeGen *cg) {
+    emit8(&cg->code, 0x48);
+    emit8(&cg->code, 0x01);
+    emit8(&cg->code, 0xD0);
+}
+
+static void emit_add_rax_r9(CodeGen *cg) {
+    emit8(&cg->code, 0x4C);
+    emit8(&cg->code, 0x01);
+    emit8(&cg->code, 0xC8);
+}
+
+static void emit_dec_rax(CodeGen *cg) {
+    emit8(&cg->code, 0x48);
+    emit8(&cg->code, 0xFF);
+    emit8(&cg->code, 0xC8);
+}
+
+static void emit_jbe_label(CodeGen *cg, int label_id) {
+    emit8(&cg->code, 0x0F);
+    emit8(&cg->code, 0x86);
+    emit_rel32_label(cg, label_id);
+}
+
+static void emit_jge_label(CodeGen *cg, int label_id) {
+    emit8(&cg->code, 0x0F);
+    emit8(&cg->code, 0x8D);
+    emit_rel32_label(cg, label_id);
+}
+
+static void emit_jle_label(CodeGen *cg, int label_id) {
+    emit8(&cg->code, 0x0F);
+    emit8(&cg->code, 0x8E);
+    emit_rel32_label(cg, label_id);
+}
+
+static void emit_lea_r8_rcx_rax(CodeGen *cg) {
+    emit8(&cg->code, 0x4C);
+    emit8(&cg->code, 0x8D);
+    emit8(&cg->code, 0x44);
+    emit8(&cg->code, 0xC1);
+    emit8(&cg->code, 0x10);
+}
+
+static void emit_lea_r8_rcx_rdx(CodeGen *cg) {
+    emit8(&cg->code, 0x4C);
+    emit8(&cg->code, 0x8D);
+    emit8(&cg->code, 0x44);
+    emit8(&cg->code, 0xD1);
+    emit8(&cg->code, 0x10);
+}
+
+static void emit_mov_mem_r8_from_rax(CodeGen *cg) {
+    emit8(&cg->code, 0x49);
+    emit8(&cg->code, 0x89);
+    emit8(&cg->code, 0x00);
+}
+
+static void emit_mov_mem_r8_from_r9(CodeGen *cg) {
+    emit8(&cg->code, 0x4D);
+    emit8(&cg->code, 0x89);
+    emit8(&cg->code, 0x08);
+}
+
+static void emit_mov_rax_from_mem_r8(CodeGen *cg) {
+    emit8(&cg->code, 0x49);
+    emit8(&cg->code, 0x8B);
+    emit8(&cg->code, 0x00);
+}
+
+static void emit_shl_rax_3(CodeGen *cg) {
+    emit8(&cg->code, 0x48);
+    emit8(&cg->code, 0xC1);
+    emit8(&cg->code, 0xE0);
+    emit8(&cg->code, 0x03);
+}
+
+static void emit_add_rax_imm8(CodeGen *cg, uint8_t v) {
+    emit8(&cg->code, 0x48);
+    emit8(&cg->code, 0x83);
+    emit8(&cg->code, 0xC0);
+    emit8(&cg->code, v);
 }
 
 
@@ -182,12 +490,48 @@ static void emit_pop_rcx(CodeGen *cg) {
     emit8(&cg->code, 0x0B);
 }
 
+static void emit_pop_rdx(CodeGen *cg) {
+    emit8(&cg->code, 0x48);
+    emit8(&cg->code, 0x83);
+    emit8(&cg->code, 0xEB);
+    emit8(&cg->code, 0x08);
+    emit8(&cg->code, 0x48);
+    emit8(&cg->code, 0x8B);
+    emit8(&cg->code, 0x13);
+}
+
+static void emit_pop_r8(CodeGen *cg) {
+    emit8(&cg->code, 0x48);
+    emit8(&cg->code, 0x83);
+    emit8(&cg->code, 0xEB);
+    emit8(&cg->code, 0x08);
+    emit8(&cg->code, 0x4C);
+    emit8(&cg->code, 0x8B);
+    emit8(&cg->code, 0x03);
+}
+
+static void emit_pop_r9(CodeGen *cg) {
+    emit8(&cg->code, 0x48);
+    emit8(&cg->code, 0x83);
+    emit8(&cg->code, 0xEB);
+    emit8(&cg->code, 0x08);
+    emit8(&cg->code, 0x4C);
+    emit8(&cg->code, 0x8B);
+    emit8(&cg->code, 0x0B);
+}
+
+static void emit_heap_alloc(CodeGen *cg, uint32_t flags) {
+    emit_mov_rcx_from_rbp(cg, (int32_t)cg->heap_offset);
+    emit_mov_rdx_imm32(cg, flags);
+    emit_mov_r8_from_rax(cg);
+    emit_call_iat(cg, cg->iat_heapalloc_rva);
+}
+
 void gen_prolog(CodeGen *cg) {
     emit8(&cg->code, 0x55);
     emit8(&cg->code, 0x48);
     emit8(&cg->code, 0x89);
     emit8(&cg->code, 0xE5);
-    emit8(&cg->code, 0x53);
     emit8(&cg->code, 0x48);
     emit8(&cg->code, 0x81);
     emit8(&cg->code, 0xEC);
@@ -196,6 +540,9 @@ void gen_prolog(CodeGen *cg) {
 
     emit_mov_rcx_imm32(cg, 65001);
     emit_call_iat(cg, cg->iat_setconcp_rva);
+
+    emit_call_iat(cg, cg->iat_getprocheap_rva);
+    emit_mov_rbp_from_rax(cg, (int32_t)cg->heap_offset);
 
     emit_mov_rcx_imm32(cg, 0xFFFFFFF5);
     emit_call_iat(cg, cg->iat_getstd_rva);
@@ -219,6 +566,10 @@ static void gen_expr(CodeGen *cg, Expr *e) {
             emit_mov_rax_imm64(cg, (uint64_t)(e->v.boolv ? 1 : 0));
             return;
         case EX_VAR: {
+            if (cg->lambda_param_name && strcmp(e->v.var, cg->lambda_param_name) == 0) {
+                emit_mov_rax_from_rbp(cg, (int32_t)cg->lambda_param_offset);
+                return;
+            }
             int idx = sym_find(&cg->sym, e->v.var);
             if (idx < 0) die("unknown variable");
             int32_t disp = (int32_t)(-16 - idx * 8);
@@ -247,6 +598,241 @@ static void gen_expr(CodeGen *cg, Expr *e) {
                 emit8(&cg->code, 0xC0);
             }
             return;
+        case EX_LAMBDA:
+            die("lambda in expression");
+            return;
+        case EX_CALL: {
+            const char *name = e->v.call.name;
+            size_t argc = e->v.call.argc;
+            Expr **args = e->v.call.args;
+            if (strcmp(name, "создать.лист.цифр") == 0) {
+                int32_t cap_disp = (int32_t)cg->temp_offset;
+                int l_zero = new_label(cg);
+                int l_done = new_label(cg);
+                // ok list header is [len, cap, data], dont ask
+                if (argc == 0) {
+                    emit_mov_rax_imm64(cg, 8);
+                } else {
+                    gen_expr(cg, args[0]);
+                }
+                emit_mov_rbp_from_rax(cg, cap_disp);
+                emit_mov_rax_imm64(cg, 24);
+                emit_heap_alloc(cg, 8);
+                emit_mov_rdx_from_rax(cg);
+                emit_mov_r12_from_rax(cg);
+                emit_mov_rax_imm64(cg, 0);
+                emit_mov_mem_rdx_from_rax(cg, 0x00);
+                emit_mov_rax_from_rbp(cg, cap_disp);
+                emit_mov_mem_rdx_from_rax(cg, 0x08);
+                emit_mov_rax_from_rbp(cg, cap_disp);
+                emit8(&cg->code, 0x48);
+                emit8(&cg->code, 0x85);
+                emit8(&cg->code, 0xC0);
+                emit8(&cg->code, 0x0F);
+                emit8(&cg->code, 0x84);
+                emit_rel32_label(cg, l_zero);
+                emit_mov_rax_from_rbp(cg, cap_disp);
+                emit_shl_rax_3(cg);
+                emit_heap_alloc(cg, 8);
+                emit_mov_r8_from_rax(cg);
+                emit_mov_rdx_from_r12(cg);
+                emit_mov_rax_from_r8(cg);
+                emit_mov_mem_rdx_from_rax(cg, 0x10);
+                emit8(&cg->code, 0xE9);
+                emit_rel32_label(cg, l_done);
+                place_label(cg, l_zero);
+                emit_mov_rax_imm64(cg, 0);
+                emit_mov_mem_rdx_from_rax(cg, 0x10);
+                place_label(cg, l_done);
+                emit_mov_rax_from_r12(cg);
+                return;
+            }
+            if (strcmp(name, "создать.массив.цифр") == 0) {
+                int32_t len_disp = (int32_t)cg->temp_offset;
+                int l_zero = new_label(cg);
+                int l_done = new_label(cg);
+                gen_expr(cg, args[0]);
+                emit_mov_rbp_from_rax(cg, len_disp);
+                emit_mov_rax_imm64(cg, 24);
+                emit_heap_alloc(cg, 8);
+                emit_mov_rdx_from_rax(cg);
+                emit_mov_r12_from_rax(cg);
+                emit_mov_rax_from_rbp(cg, len_disp);
+                emit_mov_mem_rdx_from_rax(cg, 0x00);
+                emit_mov_rax_from_rbp(cg, len_disp);
+                emit_mov_mem_rdx_from_rax(cg, 0x08);
+                emit_mov_rax_from_rbp(cg, len_disp);
+                emit8(&cg->code, 0x48);
+                emit8(&cg->code, 0x85);
+                emit8(&cg->code, 0xC0);
+                emit8(&cg->code, 0x0F);
+                emit8(&cg->code, 0x84);
+                emit_rel32_label(cg, l_zero);
+                emit_mov_rax_from_rbp(cg, len_disp);
+                emit_shl_rax_3(cg);
+                emit_heap_alloc(cg, 8);
+                emit_mov_r8_from_rax(cg);
+                emit_mov_rdx_from_r12(cg);
+                emit_mov_rax_from_r8(cg);
+                emit_mov_mem_rdx_from_rax(cg, 0x10);
+                emit8(&cg->code, 0xE9);
+                emit_rel32_label(cg, l_done);
+                place_label(cg, l_zero);
+                emit_mov_rax_imm64(cg, 0);
+                emit_mov_mem_rdx_from_rax(cg, 0x10);
+                place_label(cg, l_done);
+                emit_mov_rax_from_r12(cg);
+                return;
+            }
+            if (strcmp(name, "сколько.внутри") == 0) {
+                gen_expr(cg, args[0]);
+                emit_mov_rcx_from_rax(cg);
+                emit_mov_rax_from_rcx_disp8(cg, 0x00);
+                return;
+            }
+            if (strcmp(name, "дай.по.индексу") == 0) {
+                gen_expr(cg, args[0]);
+                emit_mov_rcx_from_rax(cg);
+                gen_expr(cg, args[1]);
+                emit_mov_rdx_from_rcx_disp8(cg, 0x10);
+                emit_shl_rax_3(cg);
+                emit_add_rax_rdx(cg);
+                emit_mov_rax_from_mem_rax(cg);
+                return;
+            }
+            if (strcmp(name, "сунь.по.индексу") == 0) {
+                int32_t list_disp = (int32_t)cg->temp_offset;
+                int32_t idx_disp = (int32_t)cg->temp2_offset;
+                gen_expr(cg, args[0]);
+                emit_mov_rbp_from_rax(cg, list_disp);
+                gen_expr(cg, args[1]);
+                emit_mov_rbp_from_rax(cg, idx_disp);
+                gen_expr(cg, args[2]);
+                emit_mov_r8_from_rax(cg);
+                emit_mov_rax_from_rbp(cg, list_disp);
+                emit_mov_rdx_from_rax(cg);
+                emit_mov_rax_from_rbp(cg, idx_disp);
+                emit_mov_rcx_from_rax(cg);
+                emit_mov_rax_from_rcx(cg);
+                emit_shl_rax_3(cg);
+                emit_mov_r9_from_rdx_disp8(cg, 0x10);
+                emit_add_rax_r9(cg);
+                emit_mov_mem_rax_from_r8(cg);
+                emit_mov_rax_from_r8(cg);
+                return;
+            }
+            if (strcmp(name, "впихни.в.лист") == 0) {
+                int32_t list_disp = (int32_t)cg->temp_offset;
+                int32_t val_disp = (int32_t)cg->temp2_offset;
+                int l_done = new_label(cg);
+                gen_expr(cg, args[0]);
+                emit_mov_rbp_from_rax(cg, list_disp);
+                gen_expr(cg, args[1]);
+                emit_mov_rbp_from_rax(cg, val_disp);
+                emit_mov_rax_from_rbp(cg, list_disp);
+                emit_mov_rdx_from_rax(cg);
+                emit_mov_rcx_from_rdx_disp8(cg, 0x00);
+                emit_mov_r8_from_rdx_disp8(cg, 0x08);
+                emit_mov_rax_from_rcx(cg);
+                emit_cmp_r8_rax(cg);
+                emit_jbe_label(cg, l_done);
+                emit_mov_r9_from_rdx_disp8(cg, 0x10);
+                emit_mov_rax_from_rbp(cg, val_disp);
+                emit_mov_r8_from_rax(cg);
+                emit_mov_rax_from_rcx(cg);
+                emit_shl_rax_3(cg);
+                emit_add_rax_r9(cg);
+                emit_mov_mem_rax_from_r8(cg);
+                emit_mov_rax_from_rcx(cg);
+                emit_add_rax_imm8(cg, 1);
+                emit_mov_mem_rdx_from_rax(cg, 0x00);
+                place_label(cg, l_done);
+                emit_mov_rax_from_rdx(cg);
+                return;
+            }
+            if (strcmp(name, "достань.последний") == 0) {
+                int l_empty = new_label(cg);
+                int l_done = new_label(cg);
+                gen_expr(cg, args[0]);
+                emit_mov_rcx_from_rax(cg);
+                emit_mov_rdx_from_rax(cg);
+                emit_mov_rax_from_rcx_disp8(cg, 0x00);
+                emit8(&cg->code, 0x48);
+                emit8(&cg->code, 0x85);
+                emit8(&cg->code, 0xC0);
+                emit8(&cg->code, 0x0F);
+                emit8(&cg->code, 0x84);
+                emit_rel32_label(cg, l_empty);
+                emit_dec_rax(cg);
+                emit_mov_mem_rdx_from_rax(cg, 0x00);
+                emit_mov_r9_from_rdx_disp8(cg, 0x10);
+                emit_shl_rax_3(cg);
+                emit_add_rax_r9(cg);
+                emit_mov_rax_from_mem_rax(cg);
+                emit8(&cg->code, 0xE9);
+                emit_rel32_label(cg, l_done);
+                place_label(cg, l_empty);
+                emit_mov_rax_imm64(cg, 0);
+                place_label(cg, l_done);
+                return;
+            }
+            if (strcmp(name, "диапазон.от.0.до") == 0) {
+                int32_t len_disp = (int32_t)cg->temp_offset;
+                int32_t list_disp = (int32_t)cg->temp2_offset;
+                int l_zero = new_label(cg);
+                int l_loop = new_label(cg);
+                int l_loop_done = new_label(cg);
+                int l_done = new_label(cg);
+                // boring loop, just fills 0..n-1
+                gen_expr(cg, args[0]);
+                emit_mov_rbp_from_rax(cg, len_disp);
+                emit_mov_rax_imm64(cg, 24);
+                emit_heap_alloc(cg, 8);
+                emit_mov_rbp_from_rax(cg, list_disp);
+                emit_mov_rdx_from_rax(cg);
+                emit_mov_r12_from_rax(cg);
+                emit_mov_rax_from_rbp(cg, len_disp);
+                emit_mov_mem_rdx_from_rax(cg, 0x00);
+                emit_mov_rax_from_rbp(cg, len_disp);
+                emit_mov_mem_rdx_from_rax(cg, 0x08);
+                emit_mov_rax_from_rbp(cg, len_disp);
+                emit8(&cg->code, 0x48);
+                emit8(&cg->code, 0x85);
+                emit8(&cg->code, 0xC0);
+                emit8(&cg->code, 0x0F);
+                emit8(&cg->code, 0x84);
+                emit_rel32_label(cg, l_zero);
+                emit_mov_rax_from_rbp(cg, len_disp);
+                emit_shl_rax_3(cg);
+                emit_heap_alloc(cg, 8);
+                emit_mov_r8_from_rax(cg);
+                emit_mov_rdx_from_r12(cg);
+                emit_mov_rax_from_r8(cg);
+                emit_mov_mem_rdx_from_rax(cg, 0x10);
+                emit_mov_rdx_from_rax(cg);
+                emit_mov_rax_imm64(cg, 0);
+                place_label(cg, l_loop);
+                emit_mov_r9_from_rbp(cg, len_disp);
+                emit_cmp_r9_rax(cg);
+                emit_jbe_label(cg, l_loop_done);
+                emit_lea_r8_rdx_rax(cg);
+                emit_mov_mem_r8_from_rax(cg);
+                emit_add_rax_imm8(cg, 1);
+                emit8(&cg->code, 0xE9);
+                emit_rel32_label(cg, l_loop);
+                place_label(cg, l_loop_done);
+                emit8(&cg->code, 0xE9);
+                emit_rel32_label(cg, l_done);
+                place_label(cg, l_zero);
+                emit_mov_rax_imm64(cg, 0);
+                emit_mov_mem_rdx_from_rax(cg, 0x10);
+                place_label(cg, l_done);
+                emit_mov_rax_from_rbp(cg, list_disp);
+                return;
+            }
+            die("unknown call");
+            return;
+        }
         case EX_BIN:
             if (e->v.bin.op == OP_AND || e->v.bin.op == OP_OR) {
                 int l_end = new_label(cg);
@@ -580,6 +1166,10 @@ void gen_stmt(CodeGen *cg, Stmt *s, int *loop_depth) {
         emit_rel32_label(cg, l_start);
         place_label(cg, l_end);
         (*loop_depth)--;
+        return;
+    }
+    if (s->kind == ST_EXPR) {
+        gen_expr(cg, s->v.expr.expr);
         return;
     }
 }

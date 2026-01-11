@@ -37,17 +37,30 @@ static void lex_skip_ws(Lexer *lx) {
 
 
 static int is_ident_start(int ch) {
-    return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_';
+    return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_' || ch >= 0x80;
 }
 
 
 static int is_ident(int ch) {
-    return is_ident_start(ch) || (ch >= '0' && ch <= '9');
+    return is_ident_start(ch) || (ch >= '0' && ch <= '9') || ch == '.';
 }
 
 
 void lex_all(Lexer *lx) {
-    const char *kw[] = {"print","let","if","else","repeat","true","false","and","or","not"};
+    const char *kw[] = {
+        "исп.команду.print",
+        "пусть",
+        "в",
+        "таком",
+        "случае",
+        "иначе.если",
+        "повторять.раз",
+        "истина.ок",
+        "ложь.падение",
+        "и.также",
+        "или.иначе",
+        "не.а"
+    };
     while (1) {
         lex_skip_ws(lx);
         int ch = lex_peek(lx);
@@ -106,8 +119,17 @@ void lex_all(Lexer *lx) {
             size_t start = lx->pos;
             int c1 = lex_get(lx);
             int c2 = lex_peek(lx);
+            int c3 = (lx->pos + 1 < lx->len) ? (unsigned char)lx->src[lx->pos + 1] : 0;
+            if (c1 == '=' && c2 == '/' && c3 == '=') {
+                lx->pos++;
+                lx->pos++;
+                Token t = {TK_OP, xstrndup("=/=", 3), 0};
+                lex_push(lx, t);
+                continue;
+            }
             if ((c1 == '=' && c2 == '=') || (c1 == '!' && c2 == '=') ||
-                (c1 == '<' && c2 == '=') || (c1 == '>' && c2 == '=')) {
+                (c1 == '<' && c2 == '=') || (c1 == '>' && c2 == '=') ||
+                (c1 == '=' && c2 == '>')) {
                 lex_get(lx);
                 char op[3] = {(char)c1, (char)c2, 0};
                 Token t = {TK_OP, xstrndup(op, 2), 0};
@@ -120,7 +142,7 @@ void lex_all(Lexer *lx) {
                 lex_push(lx, t);
                 continue;
             }
-            if (strchr("(){};", c1)) {
+            if (strchr("(){};,", c1)) {
                 char op[2] = {(char)c1, 0};
                 Token t = {TK_SYM, xstrndup(op, 1), 0};
                 lex_push(lx, t);

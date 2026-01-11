@@ -2,6 +2,10 @@
 #define COTLIN_COMMON_H
 
 
+#ifdef _MSC_VER
+#pragma execution_character_set("utf-8")
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -45,8 +49,18 @@ typedef enum {
     EX_VAR,
     EX_STR,
     EX_BIN,
-    EX_UNARY
+    EX_UNARY,
+    EX_CALL,
+    EX_LAMBDA
 } ExprKind;
+
+typedef enum {
+    TY_INT,
+    TY_LIST,
+    TY_ARRAY,
+    TY_LAMBDA,
+    TY_INVALID
+} TypeKind;
 
 typedef enum {
     OP_ADD,
@@ -83,6 +97,15 @@ struct Expr {
             OpKind op;
             Expr *expr;
         } un;
+        struct {
+            char *name;
+            Expr **args;
+            size_t argc;
+        } call;
+        struct {
+            char *param;
+            Expr *body;
+        } lambda;
     } v;
 };
 
@@ -92,7 +115,8 @@ typedef enum {
     ST_LET,
     ST_SET,
     ST_IF,
-    ST_REPEAT
+    ST_REPEAT,
+    ST_EXPR
 } StmtKind;
 
 typedef struct Stmt Stmt;
@@ -105,6 +129,7 @@ struct Stmt {
         struct { char *name; Expr *expr; } set;
         struct { Expr *cond; Stmt *thenb; Stmt *elseb; } ifs;
         struct { Expr *count; Stmt *body; } repeat;
+        struct { Expr *expr; } expr;
         struct { Stmt **items; size_t count; } block;
     } v;
 };
@@ -121,6 +146,7 @@ typedef struct {
 typedef struct {
     char *name;
     int index;
+    TypeKind type;
 } Sym;
 
 typedef struct {
@@ -172,7 +198,14 @@ typedef struct {
     uint32_t iat_write_rva;
     uint32_t iat_exit_rva;
     uint32_t iat_setconcp_rva;
+    uint32_t iat_getprocheap_rva;
+    uint32_t iat_heapalloc_rva;
     size_t frame_size;
+    int64_t heap_offset;
+    int64_t temp_offset;
+    int64_t temp2_offset;
+    int64_t lambda_param_offset;
+    char *lambda_param_name;
 } CodeGen;
 
 
@@ -185,6 +218,8 @@ typedef struct {
     size_t hn_write;
     size_t hn_exit;
     size_t hn_setconcp;
+    size_t hn_getheap;
+    size_t hn_heapalloc;
     size_t dll_name;
 } RDataLayout;
 
@@ -196,7 +231,7 @@ char *read_file(const char *path, size_t *out_len);
 char *default_output(const char *in);
 void lex_all(Lexer *lx);
 Stmt *parse_program(Parser *p);
-void sym_add(SymTab *st, const char *name);
+void sym_add(SymTab *st, const char *name, TypeKind type);
 int sym_find(SymTab *st, const char *name);
 void sem_stmt(Stmt *s, SymTab *st, int *max_stack, int *max_repeat, int repeat_depth);
 void gen_stmt(CodeGen *cg, Stmt *s, int *loop_depth);

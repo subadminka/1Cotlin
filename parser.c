@@ -7,6 +7,10 @@ static Token *peek(Parser *p) {
     return &p->items[p->pos];
 }
 
+static Token *peek_n(Parser *p, size_t n) {
+    return &p->items[p->pos + n];
+}
+
 
 static Token *advance(Parser *p) {
     return &p->items[p->pos++];
@@ -81,10 +85,10 @@ static Expr *parse_primary(Parser *p) {
         e->v.str = s;
         return e;
     }
-    if (t->kind == TK_KW && (strcmp(t->text, "true") == 0 || strcmp(t->text, "false") == 0)) {
+    if (t->kind == TK_KW && (strcmp(t->text, "истина.ок") == 0 || strcmp(t->text, "ложь.падение") == 0)) {
         advance(p);
         Expr *e = new_expr(EX_BOOL);
-        e->v.boolv = strcmp(t->text, "true") == 0;
+        e->v.boolv = strcmp(t->text, "истина.ок") == 0;
         return e;
     }
     if (t->kind == TK_ID) {
@@ -93,13 +97,52 @@ static Expr *parse_primary(Parser *p) {
         e->v.var = t->text;
         return e;
     }
-    if (match(p, TK_SYM, "(")) {
+    if (t->kind == TK_SYM && strcmp(t->text, "(") == 0) {
+        if (peek_n(p, 1)->kind == TK_ID &&
+            peek_n(p, 2)->kind == TK_SYM && strcmp(peek_n(p, 2)->text, ")") == 0 &&
+            peek_n(p, 3)->kind == TK_OP && strcmp(peek_n(p, 3)->text, "=>") == 0) {
+            advance(p);
+            char *param = expect(p, TK_ID, 0)->text;
+            expect(p, TK_SYM, ")");
+            expect(p, TK_OP, "=>");
+            Expr *body = parse_expression(p);
+            Expr *e = new_expr(EX_LAMBDA);
+            e->v.lambda.param = param;
+            e->v.lambda.body = body;
+            return e;
+        }
+        advance(p);
         Expr *e = parse_expression(p);
         expect(p, TK_SYM, ")");
         return e;
     }
     die("bad expression");
     return 0;
+}
+
+static Expr *parse_postfix(Parser *p) {
+    Expr *expr = parse_primary(p);
+    while (match(p, TK_SYM, "(")) {
+        Expr **args = 0;
+        size_t argc = 0;
+        if (!match(p, TK_SYM, ")")) {
+            while (1) {
+                Expr *a = parse_expression(p);
+                args = (Expr **)realloc(args, (argc + 1) * sizeof(Expr *));
+                if (!args) die("out of memory");
+                args[argc++] = a;
+                if (match(p, TK_SYM, ")")) break;
+                expect(p, TK_SYM, ",");
+            }
+        }
+        if (expr->kind != EX_VAR) die("call on non-name");
+        Expr *call = new_expr(EX_CALL);
+        call->v.call.name = expr->v.var;
+        call->v.call.args = args;
+        call->v.call.argc = argc;
+        expr = call;
+    }
+    return expr;
 }
 
 
@@ -112,14 +155,14 @@ static Expr *parse_unary(Parser *p) {
         e->v.un.expr = parse_unary(p);
         return e;
     }
-    if (t->kind == TK_KW && strcmp(t->text, "not") == 0) {
+    if (t->kind == TK_KW && strcmp(t->text, "не.а") == 0) {
         advance(p);
         Expr *e = new_expr(EX_UNARY);
         e->v.un.op = OP_NOT;
         e->v.un.expr = parse_unary(p);
         return e;
     }
-    return parse_primary(p);
+    return parse_postfix(p);
 }
 
 
@@ -189,7 +232,7 @@ static Expr *parse_equality(Parser *p) {
     Expr *left = parse_compare(p);
     while (1) {
         Token *t = peek(p);
-        if (t->kind == TK_OP && (strcmp(t->text, "==") == 0 || strcmp(t->text, "!=") == 0)) {
+        if (t->kind == TK_OP && (strcmp(t->text, "==") == 0 || strcmp(t->text, "!=") == 0 || strcmp(t->text, "=/=") == 0)) {
             advance(p);
             Expr *e = new_expr(EX_BIN);
             e->v.bin.op = (strcmp(t->text, "==") == 0) ? OP_EQ : OP_NE;
@@ -208,7 +251,7 @@ static Expr *parse_logic_and(Parser *p) {
     Expr *left = parse_equality(p);
     while (1) {
         Token *t = peek(p);
-        if (t->kind == TK_KW && strcmp(t->text, "and") == 0) {
+        if (t->kind == TK_KW && strcmp(t->text, "и.также") == 0) {
             advance(p);
             Expr *e = new_expr(EX_BIN);
             e->v.bin.op = OP_AND;
@@ -227,7 +270,7 @@ static Expr *parse_logic_or(Parser *p) {
     Expr *left = parse_logic_and(p);
     while (1) {
         Token *t = peek(p);
-        if (t->kind == TK_KW && strcmp(t->text, "or") == 0) {
+        if (t->kind == TK_KW && strcmp(t->text, "или.иначе") == 0) {
             advance(p);
             Expr *e = new_expr(EX_BIN);
             e->v.bin.op = OP_OR;
@@ -265,14 +308,16 @@ static Stmt *parse_block(Parser *p) {
 
 static Stmt *parse_statement(Parser *p) {
     Token *t = peek(p);
-    if (t->kind == TK_KW && strcmp(t->text, "print") == 0) {
+    if (t->kind == TK_KW && strcmp(t->text, "исп.команду.print") == 0) {
         advance(p);
         Stmt *s = new_stmt(ST_PRINT);
+        expect(p, TK_SYM, "(");
         s->v.print.expr = parse_expression(p);
+        expect(p, TK_SYM, ")");
         match(p, TK_SYM, ";");
         return s;
     }
-    if (t->kind == TK_KW && strcmp(t->text, "let") == 0) {
+    if (t->kind == TK_KW && strcmp(t->text, "пусть") == 0) {
         advance(p);
         Token *id = expect(p, TK_ID, 0);
         expect(p, TK_OP, "=");
@@ -282,26 +327,28 @@ static Stmt *parse_statement(Parser *p) {
         match(p, TK_SYM, ";");
         return s;
     }
-    if (t->kind == TK_KW && strcmp(t->text, "if") == 0) {
+    if (t->kind == TK_KW && strcmp(t->text, "в") == 0) {
         advance(p);
+        expect(p, TK_KW, "таком");
+        expect(p, TK_KW, "случае");
         Stmt *s = new_stmt(ST_IF);
         s->v.ifs.cond = parse_expression(p);
         s->v.ifs.thenb = parse_block(p);
         s->v.ifs.elseb = 0;
-        if (peek(p)->kind == TK_KW && strcmp(peek(p)->text, "else") == 0) {
+        if (peek(p)->kind == TK_KW && strcmp(peek(p)->text, "иначе.если") == 0) {
             advance(p);
             s->v.ifs.elseb = parse_block(p);
         }
         return s;
     }
-    if (t->kind == TK_KW && strcmp(t->text, "repeat") == 0) {
+    if (t->kind == TK_KW && strcmp(t->text, "повторять.раз") == 0) {
         advance(p);
         Stmt *s = new_stmt(ST_REPEAT);
         s->v.repeat.count = parse_expression(p);
         s->v.repeat.body = parse_block(p);
         return s;
     }
-    if (t->kind == TK_ID) {
+    if (t->kind == TK_ID && peek_n(p, 1)->kind == TK_OP && strcmp(peek_n(p, 1)->text, "=") == 0) {
         Token *id = advance(p);
         expect(p, TK_OP, "=");
         Stmt *s = new_stmt(ST_SET);
@@ -310,8 +357,12 @@ static Stmt *parse_statement(Parser *p) {
         match(p, TK_SYM, ";");
         return s;
     }
-    die("bad statement");
-    return 0;
+    {
+        Stmt *s = new_stmt(ST_EXPR);
+        s->v.expr.expr = parse_expression(p);
+        match(p, TK_SYM, ";");
+        return s;
+    }
 }
 
 
