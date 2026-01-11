@@ -1,0 +1,11 @@
+﻿let n = 5
+print "привет"
+repeat n {
+    print n
+}
+
+if n > 2 {
+    print "много"
+} else {
+    print "мало"
+}
